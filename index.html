@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vista Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            text-align: center;
+        }
+        #form-container {
+            margin-top: 20px;
+        }
+        #answer-box {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        #next-button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #next-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h2>Vista Form</h2>
+    <div id="form-container">
+        <p id="question-label"></p>
+        <input type="text" id="answer-box" placeholder="... جواب را در این کادر بنویسید" />
+        <button id="next-button">ادامه</button>
+    </div>
+
+    <script>
+        // Questions array
+        const questions = [
+            "برای شروع لطفا نام خود را وارد کنید",
+            "حداکثر مبلغ در نظر گرفتع شده برای اجاره منزل را معین کنید",
+            "لطفا تعداد دقیق مستاجر همراه با جنسیت ذکر شود ",
+            "شرایط واحد مورد نظر خود را مشخص کنید ( استودیو ، تک خواب ، دوخواب و...)",
+            "لوکیش های مدنظر خود را بنویسید (ایستگاه مترو ، فاصله تا مترو (پیاده یا اتوبوس))",
+            "شرایط خاص (کلید اول، ریمونت و...)مشخص شود",
+            "میزان اهمیت انجام رجستری توسط صاحب واحد",
+            "اگر موارد خاصی را لازم به در نظر گرفتن دارید بنویسید",
+            "راه ارتباطی ما با شما : ( آیدی تلگرام یا شماره واتساپ)"
+        ];
+
+        // Array to store answers
+        const answers = [];
+        let currentQuestion = 0;
+
+        // Get HTML elements
+        const questionLabel = document.getElementById("question-label");
+        const answerBox = document.getElementById("answer-box");
+        const nextButton = document.getElementById("next-button");
+
+        // Function to load questions
+        function loadQuestion() {
+            if (currentQuestion < questions.length) {
+                questionLabel.innerText = questions[currentQuestion]; // Display current question
+                answerBox.value = ""; // Clear the input box
+                answerBox.focus(); // Focus on input field
+            } else {
+                alert("ممنون از همراهی شما ، پاسخ های شما با موفقیت ارسال شد ، اکنون می توانید پنجره سوالات را ببندید");
+                sendToTelegram(); // Send the answers to Telegram
+            }
+        }
+
+        // Event listener for the "Next" button
+        nextButton.addEventListener("click", function() {
+            const answer = answerBox.value.trim();
+            if (answer) {
+                answers.push(answer); // Save the answer
+                currentQuestion++; // Move to the next question
+                loadQuestion(); // Load the next question
+            } else {
+                alert("لطفا برای سوال مطرح شده پاسخی بنویسید");
+            }
+        });
+
+        // Function to send answers to Telegram
+        function sendToTelegram() {
+            const token = "7493959835:AAGS44EHUvCeTV5XNT2I77uZIISSFJ1O_xw"; // Replace with your bot token
+            const chatId = "-4750668537"; // Replace with your group chat ID (with the negative sign)
+
+            // Prepare the message with "from Shayan" prepended
+            const message = `from Shayan\n\n${answers.join("\n")}`; // Add "from Shayan" at the top
+
+            // Construct the API URL for sending the message
+            const url = `https://api.telegram.org/bot${token}/sendMessage`;
+            const body = {
+                chat_id: chatId,
+                text: message
+            };
+
+            // Send the data to Telegram using fetch API
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body) // Convert the body to JSON format
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to send message to Telegram.");
+                }
+                console.log("Answers sent to Telegram successfully.");
+                closeWindow(); // Close the tab/window
+            })
+            .catch(error => {
+                console.error("Error sending answers to Telegram:", error);
+                alert("There was an error sending your answers. Please try again.");
+            });
+        }
+
+        // Function to close the window
+        function closeWindow() {
+            alert("Closing the form now. Have a great day!");
+            window.open('', '_self'); // Necessary for some browsers
+            window.close(); // Attempt to close the window/tab
+        }
+
+        // Initialize the form by loading the first question
+        loadQuestion();
+    </script>
+</body>
+</html>
